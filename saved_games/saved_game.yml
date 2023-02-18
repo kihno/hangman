@@ -1,0 +1,15 @@
+--- !ruby/object:Game
+gameover: false
+secret_word: prevent
+turn: 1
+used_letters:
+- a
+guess:
+- _
+- _
+- _
+- _
+- _
+- _
+- _
+letter: save

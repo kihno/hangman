@@ -1,53 +1,56 @@
+require 'yaml'
+
+# Hangman game class
 class Game
   HANGMANPICS = ['''
     +---+
     |   |
-    |   
     |
-    |   
-    |   
+    |
+    |
+    |
   =========''', '''
     +---+
     |   |
     |   O
-    |   
-    |   
-    |   
+    |
+    |
+    |
   =========''', '''
     +---+
     |   |
     |   O
     |   |
-    |   
-    |   
+    |
+    |
   =========''', '''
     +---+
     |   |
     |   O
     |  /|
-    |   
-    |   
+    |
+    |
   =========''', '''
     +---+
     |   |
     |   O
     |  /|\
-    |   
-    |   
+    |
+    |
   =========''', '''
     +---+
     |   |
     |   O
     |  /|\
     |  /
-    |    
+    |
   =========''', '''
     +---+
     |   |
     |   O
     |  /|\
     |  / \
-    |    
+    |
   =========''']
 
   def get_random_word
@@ -58,28 +61,56 @@ class Game
 
   def welcome_message
     puts "Welcome to Hangman. Can you guess the secret word?"
-    puts HANGMANPICS[@turn]
-    puts "  #{@guess.join(' ')}"
-    puts "\n"
-    puts "Choose your first letter:"
+    puts "Do you want to [1] New Game
+               [2] Load Game"
+    input = gets.chomp
+
+    if input == '1'
+      puts HANGMANPICS[@turn]
+      puts "  #{@guess.join(' ')}"
+      puts "\n"
+      puts "Choose your first letter:"
+    elsif input == '2'
+      load_game
+    end
   end
 
   def game_start
     @gameover = false
     @secret_word = get_random_word
     @turn = 0
-    @used_letter = []
+    @used_letters = []
     @guess = Array.new(@secret_word.length, '_')
 
     welcome_message
     game_loop
   end
 
+  def save_game
+    File.open('saved_games/saved_game.yml', 'w') { |file| file.write(self) }
+    # File.open('saved_games/saved_game', 'w') { |f| Marshal.dump(self, f) }
+    abort 'Game Saved.'
+  end
+
+  def load_game
+    loaded_game = YAML.load(File.read('saved_games/saved_game.yml'))
+    p loaded_game
+    # @secret_word = loaded_game.secret_word
+    # @turn = loaded_game.turn
+    # @used_letters = loaded_game.used_letters
+    # @guess = loaded_game.guess
+
+    # print_gameboard
+    # puts "Choose another letter (or type 'save' to save progress):"
+    # game_loop
+
+  end
+
   def print_gameboard
     puts HANGMANPICS[@turn]
     puts " #{@guess.join(' ')}"
     puts "\n"
-    puts " #{@used_letter.join(' ')}"
+    puts " #{@used_letters.join(' ')}"
     puts "\n"
   end
 
@@ -93,23 +124,24 @@ class Game
   end
 
   def game_loop
-    @letter = gets.chomp.downcase
-
     until @gameover
-      if @guess.include?(@letter)
+      @letter = gets.chomp.downcase
+
+      if @letter == 'save'
+        save_game
+      elsif @letter.length > 1
+        puts "Please enter a single letter at a time (or type 'save' to save game):"
+      elsif @guess.include?(@letter)
         puts "You've already guessed that letter. Choose another:"
-        @letter = gets.chomp.downcase
       elsif !@letter.match?(/[[:alpha:]]/)
-        puts "Please choose a letter from A-Z"
-        @letter = gets.chomp.downcase
+        puts "Please choose a letter from A-Z (or type 'save' to save progress)"
       elsif @secret_word.include?(@letter)
         indexes = @secret_word.split('').each_index.select { |i| @secret_word[i] == @letter }
         indexes.each { |index| @guess[index] = @letter }
         print_gameboard
 
         if @guess.include?('_')
-          puts "Choose another letter:"
-          @letter = gets.chomp.downcase
+          puts "Choose another letter (or type 'save' to save progress):"
         else
           @gameover = true
           puts "You've guessed the secret word!"
@@ -124,19 +156,14 @@ class Game
           puts "Gameover. You've been hanged. The secret word was #{@secret_word}"
           replay
         else
-          @used_letter.push(@letter)
+          @used_letters.push(@letter)
           print_gameboard
-          puts "Choose another letter:"
-          @letter = gets.chomp.downcase
+          puts "Choose another letter (or type 'save' to save progress):"
         end
       end
     end
   end
-
-  def save_game
-
-  end
 end
 
-new_game = Game.new
-new_game.game_start
+hangman = Game.new
+hangman.game_start
