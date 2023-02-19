@@ -164,7 +164,6 @@ class Game
       elsif @secret_word.include?(@letter)
         indexes = @secret_word.split('').each_index.select { |i| @secret_word[i] == @letter }
         indexes.each { |index| @guess[index] = @letter }
-        @used_letters.push(@letter)
         print_gameboard
 
         if @guess.include?('_')
@@ -180,7 +179,7 @@ class Game
         if @turn == 6
           @gameover = true
           print_gameboard
-          puts "Gameover. You've been hanged. The secret word was #{@secret_word}"
+          puts "Gameover. You've been hanged. The secret word was #{@secret_word}."
           replay
         else
           @used_letters.push(@letter)
