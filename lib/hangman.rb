@@ -1,5 +1,3 @@
-require 'yaml'
-
 # Hangman game class
 class Game
   HANGMANPICS = ['''
@@ -72,6 +70,9 @@ class Game
       puts "Choose your first letter:"
     elsif input == '2'
       load_game
+      # print_gameboard
+      # puts "Choose another letter (or type 'save' to save progress):"
+      # game_loop
     end
   end
 
@@ -87,23 +88,16 @@ class Game
   end
 
   def save_game
-    File.open('saved_games/saved_game.yml', 'w') { |file| file.write(self) }
-    # File.open('saved_games/saved_game', 'w') { |f| Marshal.dump(self, f) }
+    # File.open('saved_games/saved_game.yml', 'w') { |file| file.write(self) }
+    File.open("saved_games/saved_game.yml", 'w') {|file| file.write    Marshal.dump(self)}
     abort 'Game Saved.'
   end
 
   def load_game
-    loaded_game = YAML.load(File.read('saved_games/saved_game.yml'))
-    p loaded_game
-    # @secret_word = loaded_game.secret_word
-    # @turn = loaded_game.turn
-    # @used_letters = loaded_game.used_letters
-    # @guess = loaded_game.guess
-
-    # print_gameboard
-    # puts "Choose another letter (or type 'save' to save progress):"
-    # game_loop
-
+    game = Marshal.load(File.open("saved_games/saved_game.yml", "r") {|file| file.read})
+    game.print_gameboard
+    puts "Choose another letter:"
+    game.game_loop
   end
 
   def print_gameboard
@@ -118,7 +112,7 @@ class Game
     puts "Do you want to play again? [y/n]"
     answer = gets.chomp.downcase
 
-    return unless answer == 'y'
+    exit unless answer == 'y'
 
     game_start
   end
@@ -131,13 +125,14 @@ class Game
         save_game
       elsif @letter.length > 1
         puts "Please enter a single letter at a time (or type 'save' to save game):"
-      elsif @guess.include?(@letter)
+      elsif @guess.include?(@letter) || @used_letters.include?(@letter)
         puts "You've already guessed that letter. Choose another:"
       elsif !@letter.match?(/[[:alpha:]]/)
         puts "Please choose a letter from A-Z (or type 'save' to save progress)"
       elsif @secret_word.include?(@letter)
         indexes = @secret_word.split('').each_index.select { |i| @secret_word[i] == @letter }
         indexes.each { |index| @guess[index] = @letter }
+        @used_letters.push(@letter)
         print_gameboard
 
         if @guess.include?('_')

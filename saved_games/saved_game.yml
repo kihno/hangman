@@ -1,15 +1,3 @@
---- !ruby/object:Game
-gameover: false
-secret_word: prevent
-turn: 1
-used_letters:
-- a
-guess:
-- _
-- _
-- _
-- _
-- _
-- _
-- _
-letter: save
+o:	Game:@gameoverF:@secret_wordI"planning:ET:
+@turni:@used_letters[	I"s;TI"p;TI"l;TI"n;T:@guess[@	@
+I"_;T@@@@@:@letterI"	save;T
