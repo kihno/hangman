@@ -70,9 +70,6 @@ class Game
       puts "Choose your first letter:"
     elsif input == '2'
       load_game
-      # print_gameboard
-      # puts "Choose another letter (or type 'save' to save progress):"
-      # game_loop
     end
   end
 
@@ -88,13 +85,44 @@ class Game
   end
 
   def save_game
-    # File.open('saved_games/saved_game.yml', 'w') { |file| file.write(self) }
-    File.open("saved_games/saved_game.yml", 'w') {|file| file.write    Marshal.dump(self)}
+    date = Time.now
+    filename = "saved_game_#{date.strftime("%c")}"
+    Dir.mkdir('saved_games') unless Dir.exist?('saved_games')
+    File.open("saved_games/#{filename}", 'w') {|file| file.write    Marshal.dump(self)}
     abort 'Game Saved.'
   end
 
+  def validate_file
+    valid = false
+
+    saved_games = Dir.children("saved_games")
+    puts "Which file do you want to load? (Enter number)"
+
+    saved_games.each_with_index do |file, index|
+      unless file == ".DS_Store"
+        puts "[#{index}] #{file}"
+      end
+    end
+
+    until valid
+      file_number = gets.chomp.to_i
+
+      if file_number > saved_games.length + 1 || saved_games[file_number] == ".DS_Store"
+        puts "Please input a valid file number:"
+        file_number = gets.chomp.to_i
+      else
+        valid = true
+      end
+    end
+
+    saved_games[file_number]
+  end
+
   def load_game
-    game = Marshal.load(File.open("saved_games/saved_game.yml", "r") {|file| file.read})
+    filename = validate_file
+
+    game = Marshal.load(File.open("saved_games/#{filename}", "r") {|file| file.read})
+
     game.print_gameboard
     puts "Choose another letter:"
     game.game_loop
@@ -111,6 +139,10 @@ class Game
   def replay
     puts "Do you want to play again? [y/n]"
     answer = gets.chomp.downcase
+
+    until answer == 'y' || answer == 'n'
+      answer = gets.chomp.downcase
+    end
 
     exit unless answer == 'y'
 
